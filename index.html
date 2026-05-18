@@ -19,7 +19,792 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
-  --bg:#080808;
+  --bg:#080808;<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>AXIS.DB</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#0d1117;
+  --surface:#161b22;
+  --surface2:#1c2128;
+  --surface3:#21262d;
+  --border:#2d333b;
+  --border2:#444c56;
+  --accent:#58a6ff;
+  --accent-dim:#1f3a5f;
+  --gold:#d4a843;
+  --gold-dim:#3d2e0e;
+  --text:#e6edf3;
+  --dim:#8b949e;
+  --muted:#484f58;
+  --white:#f0f6fc;
+  --red:#f85149;
+  --green:#3fb950;
+  --purple:#bc8cff;
+}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'Courier New',monospace;font-size:14px}
+#app{display:flex;flex-direction:column;height:100dvh;overflow:hidden}
+
+/* ── LOCK ── */
+#lock{position:fixed;inset:0;background:var(--bg);z-index:100;display:flex;align-items:center;justify-content:center;padding:24px}
+.lock-box{width:100%;max-width:340px}
+.lock-logo{font-size:28px;font-weight:bold;color:var(--white);letter-spacing:5px;margin-bottom:2px}
+.lock-logo span{color:var(--accent)}
+.lock-sub{font-size:9px;color:var(--muted);letter-spacing:4px;text-transform:uppercase;margin-bottom:48px}
+.lock-label{font-size:9px;color:var(--dim);letter-spacing:3px;text-transform:uppercase;margin-bottom:8px}
+.lock-input{width:100%;background:var(--surface);border:1px solid var(--border2);border-radius:6px;padding:13px 16px;color:var(--text);font-size:16px;font-family:'Courier New',monospace;outline:none;letter-spacing:4px;margin-bottom:12px;transition:border-color .2s}
+.lock-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-dim)}
+.lock-btn{width:100%;padding:13px;background:var(--accent);color:#0d1117;border:none;border-radius:6px;font-size:11px;font-family:'Courier New',monospace;letter-spacing:3px;text-transform:uppercase;cursor:pointer;font-weight:bold;transition:opacity .2s}
+.lock-btn:hover{opacity:.88}
+.lock-err{font-size:10px;color:var(--red);margin-top:10px;letter-spacing:1px;min-height:16px;text-align:center}
+
+/* ── HEADER ── */
+#header{border-bottom:1px solid var(--border);flex-shrink:0;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;background:var(--surface)}
+.h-left{display:flex;align-items:center;gap:12px}
+.h-logo{font-size:15px;font-weight:bold;color:var(--white);letter-spacing:3px}
+.h-logo span{color:var(--accent)}
+.h-badge{font-size:8px;color:var(--dim);letter-spacing:2px;border:1px solid var(--border2);border-radius:3px;padding:2px 6px;text-transform:uppercase}
+.h-right{display:flex;align-items:center;gap:14px}
+.h-stat{display:flex;align-items:center;gap:5px}
+.h-stat-dot{width:5px;height:5px;border-radius:50%;animation:pulse 2s ease-in-out infinite}
+.h-stat-dot.green{background:var(--green);box-shadow:0 0 6px var(--green)}
+.h-stat-label{font-size:9px;color:var(--dim);letter-spacing:1px}
+.h-divider{width:1px;height:16px;background:var(--border2)}
+.h-time{font-size:11px;color:var(--accent);letter-spacing:2px;font-variant-numeric:tabular-nums}
+.h-date{font-size:9px;color:var(--muted);letter-spacing:1px}
+
+/* ── MAIN ── */
+#main{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.view{flex:1;overflow-y:auto;padding:14px 14px 20px;-webkit-overflow-scrolling:touch;display:none}
+.view.active{display:flex;flex-direction:column;gap:10px}
+
+/* ── STATUS BAR ── */
+.status-bar{display:flex;align-items:center;gap:16px;padding:7px 14px;background:var(--surface);border:1px solid var(--border);border-radius:6px;flex-wrap:wrap;gap:10px}
+.stat-item{display:flex;align-items:center;gap:6px}
+.stat-val{font-size:9px;color:var(--dim);letter-spacing:1px}
+.stat-num{font-size:9px;color:var(--text);font-weight:bold}
+.stat-sep{width:1px;height:10px;background:var(--border2)}
+
+/* ── HYPO ── */
+.hypo{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:6px;padding:14px 16px}
+.hypo-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.hypo-label{font-size:8px;color:var(--accent);letter-spacing:3px;text-transform:uppercase}
+.hypo-status{font-size:8px;color:var(--dim);letter-spacing:1px;background:var(--surface2);border:1px solid var(--border2);border-radius:3px;padding:2px 6px}
+.hypo-text{font-size:12px;color:var(--dim);line-height:1.85;font-style:italic}
+.hypo-warn{font-size:8px;color:var(--gold);letter-spacing:1px;margin-top:10px;display:flex;align-items:center;gap:5px}
+
+/* ── SECTION LABEL ── */
+.sec{display:flex;align-items:center;gap:10px;margin-top:2px}
+.sec-label{font-size:9px;color:var(--dim);letter-spacing:3px;text-transform:uppercase;white-space:nowrap}
+.sec-line{flex:1;height:1px;background:var(--border)}
+
+/* ── PILLARS ── */
+.pillar{background:var(--surface);border:1px solid var(--border);border-radius:6px;overflow:hidden}
+.pillar-hdr{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;user-select:none;transition:background .15s}
+.pillar-hdr:hover{background:var(--surface2)}
+.pillar-hdr.open{background:var(--surface2)}
+.pillar-indicator{width:3px;height:28px;border-radius:2px;flex-shrink:0}
+.pillar-info{flex:1;min-width:0}
+.pillar-name{font-size:12px;color:var(--text);letter-spacing:.3px;margin-bottom:2px}
+.pillar-desc{font-size:9px;color:var(--muted)}
+.pillar-meta{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.pillar-count{font-size:9px;color:var(--dim);background:var(--surface3);border:1px solid var(--border2);border-radius:3px;padding:1px 6px}
+.pillar-arr{font-size:10px;color:var(--muted);transition:transform .2s}
+.pillar-arr.open{transform:rotate(180deg);color:var(--dim)}
+.pillar-body{border-top:1px solid var(--border);display:none}
+.pillar-body.open{display:block}
+.branch{padding:10px 14px 10px 28px;border-bottom:1px solid var(--border);cursor:pointer;user-select:none;transition:background .12s}
+.branch:last-child{border-bottom:none}
+.branch:hover{background:var(--surface2)}
+.branch.open{background:var(--surface2)}
+.branch-hdr{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.branch-name{font-size:11px;color:var(--dim);transition:color .15s}
+.branch-name.open{color:var(--text)}
+.branch-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.branch-arr{font-size:9px;color:var(--muted);transition:transform .2s}
+.branch-arr.open{transform:rotate(180deg);color:var(--dim)}
+.branch-notes{font-size:11px;color:var(--dim);line-height:1.75;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.q-btn{font-size:9px;color:var(--accent);background:transparent;border:1px solid var(--border2);border-radius:3px;padding:3px 9px;cursor:pointer;font-family:'Courier New',monospace;letter-spacing:1px;text-transform:uppercase;transition:all .15s;white-space:nowrap}
+.q-btn:hover{border-color:var(--accent);background:var(--accent-dim)}
+
+/* ── THREADS ── */
+.thread{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:11px 14px;cursor:pointer;user-select:none;transition:background .15s;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.thread:hover{background:var(--surface2)}
+.thread-name{font-size:11px;color:var(--text);margin-bottom:3px}
+.thread-desc{font-size:10px;color:var(--muted)}
+.thread-arrow{color:var(--muted);font-size:14px;flex-shrink:0}
+
+/* ── PERSONAL ── */
+.personal-card{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--gold);border-radius:6px;padding:14px 16px;cursor:pointer;user-select:none;transition:background .15s;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.personal-card:hover{background:var(--surface2)}
+.personal-card-label{font-size:9px;color:var(--gold);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px}
+.personal-card-sub{font-size:11px;color:var(--dim)}
+.personal-card-arrow{color:var(--gold);font-size:18px;flex-shrink:0}
+
+/* ── CHAT ── */
+#chat-view{flex:1;display:none;flex-direction:column;overflow:hidden}
+#chat-view.active{display:flex}
+.chat-top{padding:9px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:var(--surface)}
+.chat-top-inner{display:flex;align-items:center;gap:8px}
+.chat-top-dot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.chat-top-dot.personal{background:var(--gold)}
+.chat-top-label{font-size:10px;color:var(--text);letter-spacing:.5px}
+.chat-top-label.personal{color:var(--gold)}
+.back-btn{font-size:9px;color:var(--dim);background:transparent;border:1px solid var(--border2);border-radius:4px;cursor:pointer;font-family:'Courier New',monospace;letter-spacing:1px;padding:5px 10px;min-height:28px;transition:all .15s}
+.back-btn:hover{color:var(--text);border-color:var(--dim)}
+.messages{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;-webkit-overflow-scrolling:touch}
+.msg{display:flex}
+.msg.user{justify-content:flex-end}
+.bubble{max-width:86%;padding:10px 14px;border-radius:6px;font-size:13px;line-height:1.7}
+.bubble.user{background:var(--surface2);border:1px solid var(--border2);color:var(--text)}
+.bubble.user.personal{border-color:rgba(212,168,67,.4)}
+.bubble.assistant{background:var(--surface);border:1px solid var(--border);border-left:2px solid var(--accent);color:var(--dim)}
+.bubble.assistant.personal{border-left-color:var(--gold)}
+.bubble-label{font-size:8px;letter-spacing:2px;text-transform:uppercase;margin-bottom:7px;color:var(--accent)}
+.bubble-label.personal{color:var(--gold)}
+.bubble p{margin:0 0 5px 0;line-height:1.75}
+.bubble p:last-child{margin-bottom:0}
+.typing{display:flex;align-items:center;gap:5px;padding:4px 0}
+.typing-dot{width:5px;height:5px;border-radius:50%;background:var(--dim);animation:tdot .9s ease-in-out infinite}
+.typing-dot:nth-child(2){animation-delay:.15s}
+.typing-dot:nth-child(3){animation-delay:.3s}
+.input-row{padding:10px 14px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:flex-end;flex-shrink:0;background:var(--surface)}
+#msg-input{flex:1;background:var(--bg);border:1px solid var(--border2);border-radius:6px;padding:10px 12px;color:var(--text);font-size:13px;font-family:'Courier New',monospace;resize:none;outline:none;line-height:1.5;max-height:100px;overflow-y:auto;transition:border-color .2s}
+#msg-input:focus{border-color:var(--accent)}
+#msg-input.personal:focus{border-color:var(--gold)}
+#send-btn{width:40px;height:40px;flex-shrink:0;border-radius:6px;border:1px solid var(--border2);background:var(--surface2);color:var(--muted);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .2s}
+#send-btn.ready{background:var(--accent);border-color:var(--accent);color:#0d1117}
+#send-btn.ready.personal{background:var(--gold);border-color:var(--gold)}
+
+/* ── NOTES ── */
+#notes-view.active{display:flex;flex-direction:column;gap:0}
+.notes-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-shrink:0}
+.notes-top-label{font-size:9px;color:var(--dim);letter-spacing:3px;text-transform:uppercase}
+.add-note-btn{font-size:9px;color:var(--accent);background:transparent;border:1px solid var(--border2);border-radius:4px;padding:5px 10px;cursor:pointer;font-family:'Courier New',monospace;letter-spacing:1px;text-transform:uppercase;transition:all .15s}
+.add-note-btn:hover{border-color:var(--accent);background:var(--accent-dim)}
+.note-form{background:var(--surface);border:1px solid var(--border2);border-radius:6px;padding:14px;margin-bottom:12px;display:none;flex-direction:column;gap:8px}
+.note-form.open{display:flex}
+.note-form select,.note-form input,.note-form textarea{background:var(--bg);border:1px solid var(--border2);border-radius:4px;padding:8px 10px;color:var(--text);font-size:12px;font-family:'Courier New',monospace;outline:none;width:100%;transition:border-color .2s}
+.note-form select:focus,.note-form input:focus,.note-form textarea:focus{border-color:var(--accent)}
+.note-form textarea{resize:none;height:80px;line-height:1.6}
+.note-form-actions{display:flex;gap:8px}
+.note-save{padding:7px 16px;background:var(--accent);color:#0d1117;border:none;border-radius:4px;font-size:10px;font-family:'Courier New',monospace;letter-spacing:1px;text-transform:uppercase;cursor:pointer;font-weight:bold}
+.note-cancel{padding:7px 14px;background:transparent;color:var(--dim);border:1px solid var(--border2);border-radius:4px;font-size:10px;font-family:'Courier New',monospace;letter-spacing:1px;text-transform:uppercase;cursor:pointer}
+.notes-list{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px}
+.note-item{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px 14px}
+.note-item-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px}
+.note-tag{font-size:8px;letter-spacing:2px;text-transform:uppercase;padding:2px 7px;border-radius:3px;border:1px solid var(--border2);color:var(--accent)}
+.note-tag.personal{color:var(--gold);border-color:rgba(212,168,67,.3)}
+.note-tag.hypothesis{color:var(--purple);border-color:rgba(188,140,255,.3)}
+.note-date{font-size:9px;color:var(--muted)}
+.note-del{font-size:10px;color:var(--muted);background:transparent;border:none;cursor:pointer;font-family:'Courier New',monospace;padding:2px 4px;transition:color .15s}
+.note-del:hover{color:var(--red)}
+.note-title{font-size:12px;color:var(--text);margin-bottom:5px;font-weight:bold}
+.note-body{font-size:11px;color:var(--dim);line-height:1.65}
+.notes-empty{font-size:11px;color:var(--muted);text-align:center;padding:48px 0;line-height:1.8}
+
+/* ── SETUP ── */
+#setup-screen{flex:1;display:none;align-items:center;justify-content:center;padding:24px}
+#setup-screen.active{display:flex}
+.setup-box{width:100%;max-width:380px;background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:24px;display:flex;flex-direction:column;gap:12px}
+.setup-title{font-size:10px;color:var(--accent);letter-spacing:3px;text-transform:uppercase}
+.setup-desc{font-size:11px;color:var(--dim);line-height:1.75}
+.setup-input{width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:4px;padding:11px 14px;color:var(--text);font-size:12px;font-family:'Courier New',monospace;outline:none;transition:border-color .2s}
+.setup-input:focus{border-color:var(--accent)}
+.setup-btn{padding:11px;background:var(--accent);color:#0d1117;border:none;border-radius:4px;font-size:10px;font-family:'Courier New',monospace;letter-spacing:2px;text-transform:uppercase;cursor:pointer;font-weight:bold}
+.setup-link{font-size:10px;color:var(--muted);text-align:center}
+.setup-link a{color:var(--accent);text-decoration:none}
+
+/* ── NAV ── */
+#nav{border-top:1px solid var(--border);display:flex;flex-shrink:0;background:var(--surface)}
+.nav-item{flex:1;padding:9px 4px 7px;background:transparent;border:none;border-top:2px solid transparent;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;font-family:'Courier New',monospace;transition:all .15s}
+.nav-item:hover{background:var(--surface2)}
+.nav-item.active{border-top-color:var(--accent);background:var(--surface2)}
+.nav-item.active.pnav{border-top-color:var(--gold)}
+.nav-icon{font-size:13px;color:var(--muted)}
+.nav-item.active .nav-icon{color:var(--accent)}
+.nav-item.active.pnav .nav-icon{color:var(--gold)}
+.nav-text{font-size:8px;letter-spacing:2px;color:var(--muted);text-transform:uppercase}
+.nav-item.active .nav-text{color:var(--accent)}
+.nav-item.active.pnav .nav-text{color:var(--gold)}
+
+/* ── UTIL ── */
+select option{background:var(--surface2)}
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+textarea::placeholder,input::placeholder{color:var(--muted)}
+@keyframes pulse{0%,100%{opacity:.6}50%{opacity:1}}
+@keyframes tdot{0%,80%,100%{transform:scale(.6);opacity:.4}40%{transform:scale(1);opacity:1}}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- LOCK -->
+<div id="lock">
+  <div class="lock-box">
+    <div class="lock-logo">AXIS<span>.</span>DB</div>
+    <div class="lock-sub">Consciousness Research System</div>
+    <div class="lock-label">Access Code</div>
+    <input class="lock-input" id="lock-input" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')unlock()"/>
+    <button class="lock-btn" onclick="unlock()">Enter</button>
+    <div class="lock-err" id="lock-err"></div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<div id="header" style="display:none">
+  <div class="h-left">
+    <div class="h-logo">AXIS<span>.</span>DB</div>
+    <div class="h-badge">v1.0</div>
+  </div>
+  <div class="h-right">
+    <div class="h-stat">
+      <div class="h-stat-dot green"></div>
+      <span class="h-stat-label">ONLINE</span>
+    </div>
+    <div class="h-divider"></div>
+    <div>
+      <div class="h-time" id="clock">--:--:--</div>
+      <div class="h-date" id="dateline"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main" style="display:none">
+
+  <!-- MAP -->
+  <div class="view" id="map-view">
+
+    <div class="status-bar">
+      <div class="stat-item"><span class="stat-val">NODES</span><span class="stat-num">17</span></div>
+      <div class="stat-sep"></div>
+      <div class="stat-item"><span class="stat-val">PILLARS</span><span class="stat-num">03</span></div>
+      <div class="stat-sep"></div>
+      <div class="stat-item"><span class="stat-val">THREADS</span><span class="stat-num">03</span></div>
+      <div class="stat-sep"></div>
+      <div class="stat-item"><span class="stat-val">HYPOTHESIS</span><span class="stat-num" style="color:var(--gold)">OPEN</span></div>
+    </div>
+
+    <div>
+      <div class="sec"><span class="sec-label">Working Hypothesis</span><div class="sec-line"></div></div>
+    </div>
+    <div class="hypo">
+      <div class="hypo-top">
+        <span class="hypo-label">Variable Expression Model</span>
+        <span class="hypo-status">Under Investigation</span>
+      </div>
+      <div class="hypo-text">Consciousness is a fundamental, inherent property of reality that expresses itself variably based on biological complexity and environmental conditions. It is not produced by matter — it is the underlying field through which matter organizes itself.</div>
+      <div class="hypo-warn"><span>⚠</span><span>Evidence is the arbiter — hypothesis may be wrong</span></div>
+    </div>
+
+    <div>
+      <div class="sec"><span class="sec-label">Knowledge Map</span><div class="sec-line"></div></div>
+    </div>
+    <div id="pillars-container" style="display:flex;flex-direction:column;gap:8px"></div>
+
+    <div>
+      <div class="sec"><span class="sec-label">Cross-Cutting Threads</span><div class="sec-line"></div></div>
+    </div>
+    <div id="threads-container" style="display:flex;flex-direction:column;gap:8px"></div>
+
+    <div>
+      <div class="sec"><span class="sec-label">Personal Layer</span><div class="sec-line"></div></div>
+    </div>
+    <div class="personal-card" onclick="goPersonal()">
+      <div>
+        <div class="personal-card-label">◆ Private Application</div>
+        <div class="personal-card-sub">Apply research to your life · reflect · decide</div>
+      </div>
+      <div class="personal-card-arrow">→</div>
+    </div>
+
+  </div>
+
+  <!-- NOTES -->
+  <div class="view" id="notes-view">
+    <div class="notes-top">
+      <div class="notes-top-label">Findings Log</div>
+      <button class="add-note-btn" onclick="toggleNoteForm()">+ Add Note</button>
+    </div>
+    <div class="note-form" id="note-form">
+      <input id="note-title" placeholder="Title / headline"/>
+      <select id="note-tag">
+        <option value="research">Research</option>
+        <option value="origins">Origins & Epistemology</option>
+        <option value="evidence">Scientific Evidence</option>
+        <option value="expression">Expression & Environment</option>
+        <option value="personal">Personal</option>
+        <option value="hypothesis">Hypothesis Update</option>
+      </select>
+      <textarea id="note-body" placeholder="Finding, insight, or observation..."></textarea>
+      <div class="note-form-actions">
+        <button class="note-save" onclick="saveNote()">Save</button>
+        <button class="note-cancel" onclick="toggleNoteForm()">Cancel</button>
+      </div>
+    </div>
+    <div class="notes-list" id="notes-list"></div>
+  </div>
+
+  <!-- CHAT -->
+  <div id="chat-view">
+    <div class="chat-top">
+      <div class="chat-top-inner">
+        <div class="chat-top-dot" id="chat-dot"></div>
+        <span class="chat-top-label" id="chat-label">Research</span>
+      </div>
+      <button class="back-btn" onclick="goMap()">← back</button>
+    </div>
+    <div class="messages" id="messages"></div>
+    <div class="input-row">
+      <textarea id="msg-input" rows="1" placeholder="Ask anything..."></textarea>
+      <button id="send-btn" onclick="sendMessage()">↑</button>
+    </div>
+  </div>
+
+  <!-- SETUP -->
+  <div id="setup-screen">
+    <div class="setup-box">
+      <div class="setup-title">◈ API Key Required</div>
+      <div class="setup-desc">Required for Query and Self chat. Stored only in your browser — sent only to Anthropic. Get a free key at the link below.</div>
+      <input class="setup-input" id="api-input" type="password" placeholder="sk-ant-..." onkeydown="if(event.key==='Enter')saveApiKey()"/>
+      <button class="setup-btn" onclick="saveApiKey()">Connect</button>
+      <div class="setup-link">→ <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- NAV -->
+<div id="nav" style="display:none">
+  <button class="nav-item active" id="nav-map" onclick="switchTab('map')">
+    <span class="nav-icon">◈</span><span class="nav-text">Map</span>
+  </button>
+  <button class="nav-item" id="nav-query" onclick="switchTab('query')">
+    <span class="nav-icon">◉</span><span class="nav-text">Query</span>
+  </button>
+  <button class="nav-item pnav" id="nav-self" onclick="switchTab('self')">
+    <span class="nav-icon">◆</span><span class="nav-text">Self</span>
+  </button>
+  <button class="nav-item" id="nav-notes" onclick="switchTab('notes')">
+    <span class="nav-icon">◇</span><span class="nav-text">Notes</span>
+  </button>
+</div>
+
+</div>
+<script>
+const APP_PASSWORD = 'zeke2024';
+
+const HYPOTHESIS = `Consciousness is a fundamental, inherent property of reality that expresses itself variably based on biological complexity and environmental conditions. It is not produced by matter — it is the underlying field through which matter organizes itself.`;
+
+const ZEKE_PROFILE = `
+NAME: Zeke
+TYPE: Generator — Strategy: Wait to Respond. Never initiate. Respond from the gut.
+AUTHORITY: Solar Plexus (Emotional) — no truth in the now. Wait out the emotional wave. Never decide on highs or lows. Sleep on major decisions.
+PROFILE: 1/3 (Investigator/Martyr) — learns through trial and error, deep researcher by nature. Normalise mistakes — that's how you grow.
+DEFINITION: Single Definition — self-contained, doesn't need others to feel complete internally.
+INCARNATION CROSS: Right Angle Cross of Planning 2 — enthusiastic about detailed solutions and the right work. Purpose fulfilled through Form.
+
+DEFINED CENTERS:
+- Root: Consistent adrenal fuel, grounded under pressure. Don't push limits constantly.
+- Sacral: Core life force. Must RESPOND not initiate. Gut sounds: ah-HUH=yes, UHN-un=no, hmmmm=not yet.
+- Splenic: Strong intuition. One-time whisper — listen immediately, it won't repeat.
+- Heart/Will/Ego: Needs respect and recognition. Word means something. Work/rest ratio essential.
+- Solar Plexus: Emotional being. Waves from hope to pain. Never decide on highs or lows. Time is the ally.
+
+OPEN CENTERS:
+- G Center: No fixed identity. Environment matters enormously — choose it carefully.
+- Throat: Not designed to speak consistently. Silence is powerful. Speak when invited.
+- Ajna: Mind is a mixing tool, not an authority. Don't let it make life decisions.
+- Head: Freedom from mental pressure is a gift.
+
+KEY CHANNELS:
+- 39/55 Emoting: Deep emotional spirit, sudden waves. Music soothes. Dark moods contain creativity.
+- 40/37 Community: Needs fair exchange. Cannot tolerate being taken advantage of.
+- 44/26 Surrender: Born entrepreneur energy. Powerful persuader. Needs rest between projects.
+- 9/52 Concentration: Incredible focus when sacral-responded. Gets into the zone. One thing at a time.
+
+WATCH FOR:
+- Initiating instead of responding → Generator trap
+- Deciding on emotional peaks/valleys → Solar Plexus trap
+- Wrong environment → Open G vulnerability
+- Overcommitting willpower → Heart Center needs rest
+- Speaking when not invited → Open Throat trap
+- Following mind instead of gut → Open Ajna/Head trap`;
+
+const PILLARS = [
+  {
+    id:'origins', name:'Origins & Epistemology', dot:'#58a6ff',
+    desc:'Who knew this first, and how did they know it',
+    branches:[
+      {id:'kemetic',name:"Kemetic / Egyptian Frameworks",notes:"Neter, Ma'at as cosmic ordering principles. Consciousness as foundational to reality, not emergent from it."},
+      {id:'yoruba',name:"Yoruba Epistemology",notes:"Ori (individual consciousness/destiny), Ashe (universal animating force). Pre-colonial frameworks of consciousness."},
+      {id:'dogon',name:"Dogon Cosmology",notes:"Arguably the most scientifically precise indigenous system. Astronomical knowledge that preceded Western discovery."},
+      {id:'vedic',name:"Vedic Parallels",notes:"Cross-cultural triangulation. Where non-Western traditions converge on similar consciousness frameworks."},
+      {id:'greek',name:"Greek Philosophy's African Roots",notes:"Tracing where Greek philosophy actually sourced its foundational ideas. Cheikh Anta Diop, Theophile Obenga."},
+    ]
+  },
+  {
+    id:'evidence', name:'Scientific Evidence & Anomalies', dot:'#bc8cff',
+    desc:'Data that supports, challenges, or complicates the hypothesis',
+    branches:[
+      {id:'quantum',name:"Quantum Measurement Problem",notes:"The observer effect. Consciousness as a variable in physical systems. Where hard physics cannot exclude the observer."},
+      {id:'nde',name:"Near Death Experience Research",notes:"Cross-cultural consistency in NDEs. AWARE study. What this implies about consciousness and the brain."},
+      {id:'morphic',name:"Morphic Resonance",notes:"Rupert Sheldrake. Memory as field-based, not brain-bound. Institutional resistance as a data point in itself."},
+      {id:'noetic',name:"Noetic Science Data",notes:"Institute of Noetic Sciences. Dean Radin's controlled studies on intention, precognition, and anomalous cognition."},
+      {id:'psychedelics',name:"Psychedelic Research",notes:"Psilocybin, DMT, and the default mode network. What altered states reveal about baseline consciousness."},
+      {id:'plants',name:"Plant Intelligence & Fungal Networks",notes:"Mycorrhizal communication. Slime mold problem solving. What consciousness looks like without a nervous system."},
+    ]
+  },
+  {
+    id:'expression', name:'Expression & Environment', dot:'#3fb950',
+    desc:'How consciousness manifests variably across biology and context',
+    branches:[
+      {id:'graded',name:"Graded Consciousness Across Species",notes:"The working hypothesis lives here. Variable expression model — same field, different biological tuners."},
+      {id:'trauma',name:"Trauma & Suppression of Consciousness",notes:"How trauma compresses conscious range. Epigenetic suppression. Intergenerational memory."},
+      {id:'environment',name:"Environment Shaping Cognitive Expression",notes:"The ant/human river analogy. Same fundamental drive, different tools and context."},
+      {id:'epigenetics',name:"Epigenetics",notes:"Environment changing biological expression without changing DNA. The bridge between nature and nurture."},
+      {id:'collective',name:"Collective Consciousness",notes:"Ubuntu philosophy. Hive behavior. Mycorrhizal networks as collective intelligence."},
+      {id:'altered',name:"Altered States as Range Expansion",notes:"Sleep, meditation, psychedelics, flow states. Are these accessing more of the field, or just changing the filter?"},
+    ]
+  }
+];
+
+const THREADS = [
+  {id:'suppression',name:'Suppression',desc:'How and why this knowledge gets marginalized'},
+  {id:'convergence',name:'Convergence',desc:'Where Western science arrives at what indigenous systems already knew'},
+  {id:'methodology',name:'Methodology',desc:'Evaluating evidence across different epistemological frameworks'},
+];
+
+const RESEARCH_SYSTEM = `You are a neutral research assistant for a personal consciousness research database.
+Working hypothesis: "${HYPOTHESIS}"
+Rules: Never advocate for or against the hypothesis. Present multiple perspectives including contradicting ones. Note evidence quality. Flag Eurocentric bias. Treat African/indigenous sources with equal scholarly weight. Be concise.`;
+
+const PERSONAL_SYSTEM = `You are a personal AI mirror and advisor for Zeke. You know his complete Human Design profile.
+Roles: 1) Help Zeke understand his behavioral patterns and emotional waves through Human Design — warm, direct, honest. 2) Connect consciousness research to his lived experience.
+ZEKE'S PROFILE: ${ZEKE_PROFILE}
+Tone: Talk like a trusted advisor. Acknowledge first, then reflect. Remind him of Solar Plexus authority when deciding on emotional peaks. Normalize trial and error — he's a 1/3. This is private. Be real.`;
+
+// ── STATE ──
+let tab = 'map';
+let isPersonal = false;
+let chatContext = null;
+let researchMsgs = [];
+let personalMsgs = [];
+let notes = JSON.parse(localStorage.getItem('axis_notes') || '[]');
+let apiKey = localStorage.getItem('axis_key') || '';
+let sending = false;
+
+// ── LOCK ──
+function unlock() {
+  const val = document.getElementById('lock-input').value;
+  if (val === APP_PASSWORD) {
+    document.getElementById('lock').style.display = 'none';
+    document.getElementById('header').style.display = 'flex';
+    document.getElementById('main').style.display = 'flex';
+    document.getElementById('nav').style.display = 'flex';
+    startClock();
+    buildMap();
+    switchTab('map');
+    document.getElementById('lock-input').value = '';
+  } else {
+    document.getElementById('lock-err').textContent = 'Incorrect password';
+    document.getElementById('lock-input').value = '';
+    setTimeout(() => { document.getElementById('lock-err').textContent = ''; }, 2000);
+  }
+}
+
+// ── CLOCK ──
+function startClock() {
+  const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const tick = () => {
+    const now = new Date();
+    document.getElementById('clock').textContent = now.toLocaleTimeString('en-US',{hour12:false});
+    document.getElementById('dateline').textContent = `${days[now.getDay()]} ${months[now.getMonth()]} ${now.getDate()}`;
+  };
+  tick(); setInterval(tick, 1000);
+}
+
+// ── BUILD MAP ──
+function buildMap() {
+  const pc = document.getElementById('pillars-container');
+  PILLARS.forEach(p => {
+    const el = document.createElement('div');
+    el.className = 'pillar';
+    el.innerHTML = `
+      <div class="pillar-hdr" id="phdr-${p.id}" onclick="togglePillar('${p.id}')">
+        <div class="pillar-indicator" style="background:${p.dot}"></div>
+        <div class="pillar-info">
+          <div class="pillar-name">${p.name}</div>
+          <div class="pillar-desc">${p.desc}</div>
+        </div>
+        <div class="pillar-meta">
+          <span class="pillar-count">${p.branches.length}</span>
+          <span class="pillar-arr" id="parr-${p.id}">▾</span>
+        </div>
+      </div>
+      <div class="pillar-body" id="pbody-${p.id}">
+        ${p.branches.map((b,i)=>`
+          <div class="branch" id="br-${b.id}" onclick="toggleBranch('${b.id}')">
+            <div class="branch-hdr">
+              <span class="branch-name" id="bname-${b.id}">${b.name}</span>
+              <div class="branch-actions">
+                <button class="q-btn" onclick="event.stopPropagation();startQuery('${b.id}','${b.name}','${b.notes.replace(/'/g,"\\'").replace(/\n/g,' ')}')">Query</button>
+                <span class="branch-arr" id="barr-${b.id}">▾</span>
+              </div>
+            </div>
+            <div class="branch-notes" id="bnotes-${b.id}" style="display:none">${b.notes}</div>
+          </div>`).join('')}
+      </div>`;
+    pc.appendChild(el);
+  });
+
+  const tc = document.getElementById('threads-container');
+  THREADS.forEach(t => {
+    const el = document.createElement('div');
+    el.className = 'thread';
+    el.innerHTML = `<div><div class="thread-name">${t.name}</div><div class="thread-desc">${t.desc}</div></div><span class="thread-arrow">→</span>`;
+    el.onclick = () => startQuery('t-'+t.id, t.name, t.desc);
+    tc.appendChild(el);
+  });
+}
+
+function togglePillar(id) {
+  const body = document.getElementById('pbody-'+id);
+  const arr = document.getElementById('parr-'+id);
+  const hdr = document.getElementById('phdr-'+id);
+  const open = body.classList.toggle('open');
+  arr.classList.toggle('open', open);
+  hdr.classList.toggle('open', open);
+}
+
+function toggleBranch(id) {
+  const notes = document.getElementById('bnotes-'+id);
+  const arr = document.getElementById('barr-'+id);
+  const name = document.getElementById('bname-'+id);
+  const br = document.getElementById('br-'+id);
+  const open = notes.style.display === 'none';
+  notes.style.display = open ? 'block' : 'none';
+  arr.classList.toggle('open', open);
+  name.classList.toggle('open', open);
+  br.classList.toggle('open', open);
+}
+
+// ── TABS ──
+function switchTab(t) {
+  tab = t; isPersonal = t === 'self';
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('chat-view').classList.remove('active');
+  document.getElementById('setup-screen').classList.remove('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+  if (t === 'map') {
+    document.getElementById('map-view').classList.add('active');
+    document.getElementById('nav-map').classList.add('active');
+  } else if (t === 'notes') {
+    document.getElementById('notes-view').classList.add('active');
+    document.getElementById('nav-notes').classList.add('active');
+    renderNotes();
+  } else if (t === 'query' || t === 'self') {
+    const nid = t === 'self' ? 'nav-self' : 'nav-query';
+    document.getElementById(nid).classList.add('active');
+    if (!apiKey) { document.getElementById('setup-screen').classList.add('active'); return; }
+    openChatView();
+  }
+}
+
+function goMap() { chatContext = null; switchTab('map'); }
+function goPersonal() { switchTab('self'); }
+function startQuery(id, name, notes) { chatContext = {id,name,notes}; switchTab('query'); }
+
+// ── CHAT ──
+function openChatView() {
+  document.getElementById('chat-view').classList.add('active');
+  const dot = document.getElementById('chat-dot');
+  const label = document.getElementById('chat-label');
+  const inp = document.getElementById('msg-input');
+
+  if (isPersonal) {
+    dot.className = 'chat-top-dot personal';
+    label.textContent = '◆ Personal · Zeke';
+    label.className = 'chat-top-label personal';
+    inp.className = 'personal';
+    inp.placeholder = "What's on your mind...";
+  } else {
+    dot.className = 'chat-top-dot';
+    label.textContent = '◈ ' + (chatContext ? chatContext.name : 'Open Research');
+    label.className = 'chat-top-label';
+    inp.className = '';
+    inp.placeholder = 'Ask anything...';
+  }
+
+  const msgs = isPersonal ? personalMsgs : researchMsgs;
+  if (msgs.length === 0) {
+    const intro = isPersonal
+      ? `Personal session open.\n\nThis space is yours, Zeke. I know your design — Generator, 1/3 profile, Solar Plexus authority, Open G and Throat.\n\nWhat's on your mind?`
+      : chatContext
+        ? `Node: **${chatContext.name}**\n\n${chatContext.notes}\n\nWhat do you want to examine here?`
+        : `Research session open. All pillars accessible. Evidence presented without bias.`;
+    addMsg('assistant', intro);
+  } else { renderMsgs(); }
+
+  inp.oninput = () => {
+    inp.style.height = 'auto';
+    inp.style.height = Math.min(inp.scrollHeight, 100) + 'px';
+    const btn = document.getElementById('send-btn');
+    btn.className = inp.value.trim() ? (isPersonal ? 'ready personal' : 'ready') : '';
+  };
+  inp.onkeydown = e => { if (e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();} };
+}
+
+function getMsgs() { return isPersonal ? personalMsgs : researchMsgs; }
+
+function addMsg(role, content) { getMsgs().push({role,content}); renderMsgs(); }
+
+function renderMsgs() {
+  const c = document.getElementById('messages');
+  c.innerHTML = '';
+  getMsgs().forEach(m => {
+    const wrap = document.createElement('div');
+    wrap.className = 'msg ' + m.role;
+    const bubble = document.createElement('div');
+    bubble.className = `bubble ${m.role}${isPersonal?' personal':''}`;
+    if (m.role === 'assistant') {
+      const lbl = document.createElement('div');
+      lbl.className = 'bubble-label' + (isPersonal?' personal':'');
+      lbl.textContent = isPersonal ? '◆ Personal Mirror' : '◈ Axis Research';
+      bubble.appendChild(lbl);
+    }
+    bubble.appendChild(fmtText(m.content));
+    wrap.appendChild(bubble); c.appendChild(wrap);
+  });
+  setTimeout(() => { c.scrollTop = c.scrollHeight; }, 30);
+}
+
+function fmtText(text) {
+  const frag = document.createDocumentFragment();
+  const ac = isPersonal ? 'var(--gold)' : 'var(--accent)';
+  text.split('\n').forEach(line => {
+    const p = document.createElement('p');
+    p.innerHTML = line
+      .replace(/\*\*(.*?)\*\*/g,`<strong style="color:${ac}">$1</strong>`)
+      .replace(/\*(.*?)\*/g,`<em style="color:var(--dim)">$1</em>`);
+    frag.appendChild(p);
+  });
+  return frag;
+}
+
+function showTyping(show) {
+  const c = document.getElementById('messages');
+  const ex = document.getElementById('typi');
+  if (ex) ex.remove();
+  if (show) {
+    const wrap = document.createElement('div'); wrap.className='msg assistant'; wrap.id='typi';
+    const bub = document.createElement('div'); bub.className=`bubble assistant${isPersonal?' personal':''}`;
+    bub.innerHTML='<div class="typing"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>';
+    wrap.appendChild(bub); c.appendChild(wrap); c.scrollTop=c.scrollHeight;
+  }
+}
+
+async function sendMessage() {
+  const inp = document.getElementById('msg-input');
+  const text = inp.value.trim();
+  if (!text || sending) return;
+  sending = true;
+  addMsg('user', text);
+  inp.value=''; inp.style.height='auto';
+  document.getElementById('send-btn').className='';
+  showTyping(true);
+
+  try {
+    const system = isPersonal ? PERSONAL_SYSTEM : RESEARCH_SYSTEM;
+    const msgs = getMsgs().map(m=>({role:m.role,content:m.content}));
+    if (!isPersonal && chatContext && msgs.filter(m=>m.role==='user').length===1) {
+      msgs[0].content = `Examining: "${chatContext.name}". Context: ${chatContext.notes}\n\n${msgs[0].content}`;
+    }
+    const res = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system,messages:msgs}),
+    });
+    showTyping(false);
+    if (!res.ok) {
+      const e=res.status;
+      throw new Error(e===401?'Invalid API key.':e===429?'Rate limit hit. Wait a moment.':`Error ${e}.`);
+    }
+    const data = await res.json();
+    addMsg('assistant', data.content?.map(b=>b.text||'').join('')||'No response.');
+  } catch(err) {
+    showTyping(false);
+    addMsg('assistant','⚠ '+(err.message||'Connection failed. Check your API key.'));
+  }
+  sending = false;
+}
+
+// ── API KEY ──
+function saveApiKey() {
+  const val = document.getElementById('api-input').value.trim();
+  if (!val.startsWith('sk-ant-')) { alert('Key should start with sk-ant-'); return; }
+  apiKey = val;
+  localStorage.setItem('axis_key', val);
+  openChatView();
+}
+
+// ── NOTES ──
+function toggleNoteForm() {
+  const form = document.getElementById('note-form');
+  const open = form.classList.toggle('open');
+  if (!open) { document.getElementById('note-title').value=''; document.getElementById('note-body').value=''; }
+}
+
+function saveNote() {
+  const title = document.getElementById('note-title').value.trim();
+  const body = document.getElementById('note-body').value.trim();
+  const tag = document.getElementById('note-tag').value;
+  if (!body) return;
+  notes.unshift({id:Date.now(),title:title||'Untitled',body,tag,date:new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})});
+  localStorage.setItem('axis_notes', JSON.stringify(notes));
+  toggleNoteForm(); renderNotes();
+}
+
+function deleteNote(id) {
+  notes = notes.filter(n=>n.id!==id);
+  localStorage.setItem('axis_notes',JSON.stringify(notes));
+  renderNotes();
+}
+
+function renderNotes() {
+  const list = document.getElementById('notes-list');
+  if (!notes.length) { list.innerHTML='<div class="notes-empty">No findings logged yet.<br>Tap + Add Note to begin.</div>'; return; }
+  list.innerHTML='';
+  notes.forEach(n => {
+    const el = document.createElement('div'); el.className='note-item';
+    el.innerHTML=`
+      <div class="note-item-top">
+        <span class="note-tag ${n.tag==='personal'?'personal':n.tag==='hypothesis'?'hypothesis':''}">${n.tag}</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="note-date">${n.date}</span>
+          <button class="note-del" onclick="deleteNote(${n.id})">✕</button>
+        </div>
+      </div>
+      <div class="note-title">${n.title}</div>
+      <div class="note-body">${n.body}</div>`;
+    list.appendChild(el);
+  });
+}
+
+document.getElementById('lock-input').focus();
+</script>
+</body>
+</html>
+
   --surface:#0f0f0f;
   --surface2:#141414;
   --border:#222;
